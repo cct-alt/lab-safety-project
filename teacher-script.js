@@ -5,12 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const classFilter = document.getElementById('class-filter');
 
     let allSubmissions = []; // 存儲所有提交的原始數據
+    let currentlyOpenBox = null; // 全局追蹤變數，解決點擊衝突問題
 
-    // --- iPad 篩選器修正 ---
     // 監聽 Firebase 數據的實時變化
     db.collection('submissions').onSnapshot(snapshot => {
         allSubmissions = [];
-        const classSet = new Set(); // 每次都重新計算班級列表
+        const classSet = new Set();
 
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -19,30 +19,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 classSet.add(data.className);
             }
         });
-        
-        // **策略：徹底重置並重建 HTML，強制 iPad/Safari 重新渲染**
-        const sortedClasses = Array.from(classSet).sort();
-        let optionsHtml = '<option value="all">所有班級</option>'; // 從一個包含預設選項的字串開始
-        sortedClasses.forEach(className => {
-            optionsHtml += `<option value="${className}">${className}班</option>`;
-        });
-        classFilter.innerHTML = optionsHtml; // 用全新的 HTML 內容替換整個選單
 
-        renderGroupList(); // 根據當前篩選器（預設為 'all'）重新渲染組別列表
+        // --- iPad 篩選器終極修正 ---
+        // **策略：使用 setTimeout 延遲執行，強制 Safari 渲染**
+        setTimeout(() => {
+            const currentSelection = classFilter.value;
+            const sortedClasses = Array.from(classSet).sort();
+            
+            let optionsHtml = '<option value="all">所有班級</option>';
+            sortedClasses.forEach(className => {
+                optionsHtml += `<option value="${className}">${className}班</option>`;
+            });
+            classFilter.innerHTML = optionsHtml;
+
+            // 嘗試恢復之前的選擇
+            if (Array.from(classFilter.options).some(opt => opt.value === currentSelection)) {
+                classFilter.value = currentSelection;
+            }
+            renderGroupList();
+        }, 10); // 延遲 10 毫秒，給瀏覽器反應時間
+
     });
 
-    // 當用戶手動改變篩選器時，重新渲染組別列表
     classFilter.addEventListener('change', renderGroupList);
 
     function renderGroupList() {
-        groupList.innerHTML = '';
         const selectedClass = classFilter.value;
         const filtered = allSubmissions.filter(sub => selectedClass === 'all' || sub.className === selectedClass);
-
-        if (filtered.length === 0) {
-            groupList.innerHTML = selectedClass === 'all' ? '<p>正在等待學生提交...</p>' : `<p>班級 ${selectedClass} 尚未有組別提交。</p>`;
-            return;
-        }
 
         filtered.sort((a, b) => {
             if (a.className < b.className) return -1;
@@ -50,13 +53,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return a.groupNum - b.groupNum;
         });
 
+        groupList.innerHTML = '';
+        if (filtered.length === 0) {
+            groupList.innerHTML = selectedClass === 'all' ? '<p>正在等待學生提交...</p>' : `<p>班級 ${selectedClass} 尚未有組別提交。</p>`;
+            return;
+        }
+
         filtered.forEach(submission => {
             const button = document.createElement('button');
             button.className = 'group-button';
             button.textContent = `${submission.className}班 - 第${submission.groupNum}組`;
             button.onclick = () => {
-                // 清理工作：確保切換組別時，之前的答案會被清空
-                submissionContent.innerHTML = '<h2 id="submission-header">請選擇一個組別來查看答案</h2>';
                 displaySubmission(submission);
                 document.querySelectorAll('.group-button.active').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
@@ -66,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySubmission(submission) {
-        submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
-        submissionContent.innerHTML = '';
+        submissionContent.innerHTML = `<h2 id="submission-header">${submission.className}班 - 第${submission.groupNum}組的答案</h2>`;
+        currentlyOpenBox = null; // 切換組別時，重置指揮官
 
         const imageContainer = document.createElement('div');
         imageContainer.id = 'image-container';
@@ -87,33 +94,35 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // --- 電腦版無法隱藏 Bug 修正 ---
-            // **策略：採用最簡單直接的狀態切換，避免複雜的事件依賴**
+            // --- 電腦版無法隱藏終極修正 ---
+            // **策略：使用單一指揮官 (currentlyOpenBox) 來管理狀態**
             markerDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
 
-                const isVisible = explanationDiv.classList.contains('visible');
-
-                // 步驟 1: 關閉所有可見的解釋框
-                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                    box.classList.remove('visible');
-                });
-                
-                // 步驟 2: 如果剛剛點擊的這個框是關閉的，就打開它
-                if (!isVisible) {
+                // 如果點擊的正是已打開的，就關閉它
+                if (currentlyOpenBox === explanationDiv) {
+                    explanationDiv.classList.remove('visible');
+                    currentlyOpenBox = null; // 指揮官下台
+                } else {
+                    // 如果有其他已打開的，先命令它關閉
+                    if (currentlyOpenBox) {
+                        currentlyOpenBox.classList.remove('visible');
+                    }
+                    // 打開新的，並計算位置
                     explanationDiv.classList.add('visible');
                     adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
+                    currentlyOpenBox = explanationDiv; // 新指揮官上任
                 }
             });
+
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        imageContainer.addEventListener('click', (e) => {
-            if (!e.target.closest('.submission-marker')) {
-                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                    box.classList.remove('visible');
-                });
+        imageContainer.addEventListener('click', () => {
+            if (currentlyOpenBox) {
+                currentlyOpenBox.classList.remove('visible');
+                currentlyOpenBox = null;
             }
         });
         submissionContent.appendChild(imageContainer);
@@ -122,18 +131,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function adjustBoxPosition(box, marker, container) {
         box.style.visibility = 'hidden';
         box.style.display = 'block';
-        const containerRect = container.getBoundingClientRect();
-        const markerRect = marker.getBoundingClientRect();
-        const boxRect = box.getBoundingClientRect();
-        let top = markerRect.bottom - containerRect.top + 10;
-        let left = markerRect.left - containerRect.left + (markerRect.width / 2) - (boxRect.width / 2);
-        if (top + boxRect.height > containerRect.height && markerRect.top - containerRect.top > boxRect.height) {
-            top = markerRect.top - containerRect.top - boxRect.height - 10;
-        }
-        if (left < 0) left = 5;
-        if (left + boxRect.width > containerRect.width) left = containerRect.width - boxRect.width - 5;
-        if (top < 0) top = 5;
-        if (top + boxRect.height > containerRect.height) top = containerRect.height - boxRect.height - 5;
+        const cRect = container.getBoundingClientRect();
+        const mRect = marker.getBoundingClientRect();
+        const bRect = box.getBoundingClientRect();
+        let top = mRect.bottom - cRect.top + 10;
+        let left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
+        if (top + bRect.height > cRect.height && mRect.top - cRect.top > bRect.height) { top = mRect.top - cRect.top - bRect.height - 10; }
+        if (left < 0) { left = 5; }
+        if (left + bRect.width > cRect.width) { left = cRect.width - bRect.width - 5; }
+        if (top < 0) { top = 5; }
+        if (top + bRect.height > cRect.height) { top = cRect.height - bRect.height - 5; }
         box.style.top = `${top}px`;
         box.style.left = `${left}px`;
         box.style.visibility = 'visible';
