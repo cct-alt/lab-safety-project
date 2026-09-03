@@ -1,41 +1,120 @@
-/* Global */
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-.container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-h1, h2 { text-align: center; color: #333; }
-.hidden { display: none !important; }
-button { cursor: pointer; }
+/* --- Global Styles --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+h1, h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+.hidden {
+    display: none !important;
+}
+button {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
 
-/* Login & Controls */
+/* --- Login & Controls --- */
 #login-view { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-select, .button-group button { width: 100%; max-width: 320px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+select, .button-group button {
+    width: 100%;
+    max-width: 320px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
 .button-group button { background-color: #007bff; color: white; border: none; font-weight: bold; }
+.button-group button:hover { background-color: #0056b3; }
 
-/* Image & Markers */
+/* --- Image & Markers (Shared) --- */
 #image-container { position: relative; margin-top: 20px; }
 #activity-image { display: block; width: 100%; height: auto; border-radius: 8px; }
-.marker, .submission-marker { position: absolute; width: 30px; height: 30px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
+.marker, .submission-marker {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
 .marker { background-color: rgba(255, 0, 0, 0.8); }
 .submission-marker { background-color: rgba(0, 123, 255, 0.8); }
 
-/* Explanation Box */
-.explanation-box, .submission-explanation { position: absolute; width: 250px; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 20; box-sizing: border-box; }
-.explanation-box { background-color: white; }
-.submission-explanation { background-color: #fff3cd; word-wrap: break-word; }
-.explanation-box textarea { width: 100%; height: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 5px; margin-bottom: 8px; }
+/* --- Explanation Box (Aesthetic Upgrade) --- */
+.explanation-box, .submission-explanation {
+    position: absolute;
+    width: 260px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    z-index: 20;
+    box-sizing: border-box;
+    font-size: 15px;
+    line-height: 1.5;
+}
+.explanation-box { background-color: white; border-top: 4px solid #007bff; }
+.submission-explanation { background-color: #fff; border-top: 4px solid #fd7e14; }
+.explanation-box textarea { width: 100%; height: 90px; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 15px; box-sizing: border-box; }
 .explanation-controls { display: flex; justify-content: flex-end; gap: 8px; }
-.explanation-controls button { padding: 5px 10px; font-size: 12px; width: auto; }
+.explanation-controls button { padding: 5px 12px; font-size: 12px; width: auto; border-radius: 5px; }
 .hide-btn { background-color: #6c757d; }
 .delete-btn { background-color: #dc3545; }
 .marker.error { border-color: #ffc107; }
 textarea.error { border: 2px solid #dc3545; }
+/* Add a title to teacher's explanation box */
+.submission-explanation::before {
+    content: "學生的解釋：";
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
 
-/* Teacher Layout */
-.teacher-layout { display: flex; gap: 25px; }
-#group-list-container { flex: 1; min-width: 280px; }
-#submission-view-container { flex: 2; min-width: 0; } /* 修正：讓此容器可以被壓縮 */
+/* --- Teacher Layout (Final Fix for iPad) --- */
+.teacher-layout {
+    display: flex;
+    flex-wrap: nowrap; /* 確保不換行 */
+    gap: 25px;
+}
+#group-list-container {
+    width: 30%; /* 明確設定寬度 */
+    min-width: 250px;
+    box-sizing: border-box;
+}
+#submission-view-container {
+    width: 70%; /* 明確設定寬度 */
+    box-sizing: border-box;
+}
 #group-list { max-height: 70vh; overflow-y: auto; margin-top: 15px; }
 .group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
 .group-button.active { background-color: #007bff; color: white; }
 .filter-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 #submission-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; min-height: 40px; }
-#delete-submission-btn { background-color: #dc3545; color: white; width: auto; padding: 8px 15px; }
+#delete-submission-btn { background-color: #dc3545; color: white; width: auto; padding: 8px 15px; border-radius: 5px; }
