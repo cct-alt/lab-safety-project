@@ -2,43 +2,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const groupList = document.getElementById('group-list');
     const submissionHeader = document.getElementById('submission-header');
     const submissionContent = document.getElementById('submission-content');
+    const submissionControls = document.getElementById('submission-controls');
     const classFilter = document.getElementById('class-filter');
 
-    let allSubmissions = []; // 存儲所有提交的原始數據
-    let currentlyOpenBox = null; // 全局追蹤變數，解決點擊衝突問題
+    let allSubmissions = [];
 
-    // 監聽 Firebase 數據的實時變化
+    // 監聽 Firebase 數據，並用 setTimeout 確保 iPad 正常渲染
     db.collection('submissions').onSnapshot(snapshot => {
         allSubmissions = [];
         const classSet = new Set();
-
         snapshot.forEach(doc => {
             const data = doc.data();
+            data.id = doc.id; // *** 重要：將 Firebase 的文檔 ID 存儲起來，以便刪除 ***
             allSubmissions.push(data);
-            if (data.className) {
-                classSet.add(data.className);
-            }
+            if (data.className) classSet.add(data.className);
         });
-
-        // --- iPad 篩選器終極修正 ---
-        // **策略：使用 setTimeout 延遲執行，強制 Safari 渲染**
+        
         setTimeout(() => {
             const currentSelection = classFilter.value;
             const sortedClasses = Array.from(classSet).sort();
-            
             let optionsHtml = '<option value="all">所有班級</option>';
             sortedClasses.forEach(className => {
                 optionsHtml += `<option value="${className}">${className}班</option>`;
             });
             classFilter.innerHTML = optionsHtml;
-
-            // 嘗試恢復之前的選擇
             if (Array.from(classFilter.options).some(opt => opt.value === currentSelection)) {
                 classFilter.value = currentSelection;
             }
             renderGroupList();
-        }, 10); // 延遲 10 毫秒，給瀏覽器反應時間
-
+        }, 50); // 稍微增加延遲，使其更穩定
     });
 
     classFilter.addEventListener('change', renderGroupList);
@@ -46,19 +38,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderGroupList() {
         const selectedClass = classFilter.value;
         const filtered = allSubmissions.filter(sub => selectedClass === 'all' || sub.className === selectedClass);
-
-        filtered.sort((a, b) => {
-            if (a.className < b.className) return -1;
-            if (a.className > b.className) return 1;
-            return a.groupNum - b.groupNum;
-        });
-
+        filtered.sort((a, b) => (a.className.localeCompare(b.className)) || (a.groupNum - b.groupNum));
         groupList.innerHTML = '';
         if (filtered.length === 0) {
             groupList.innerHTML = selectedClass === 'all' ? '<p>正在等待學生提交...</p>' : `<p>班級 ${selectedClass} 尚未有組別提交。</p>`;
             return;
         }
-
         filtered.forEach(submission => {
             const button = document.createElement('button');
             button.className = 'group-button';
@@ -73,8 +58,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySubmission(submission) {
-        submissionContent.innerHTML = `<h2 id="submission-header">${submission.className}班 - 第${submission.groupNum}組的答案</h2>`;
-        currentlyOpenBox = null; // 切換組別時，重置指揮官
+        submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
+        submissionContent.innerHTML = '';
+        submissionControls.innerHTML = ''; // 清空舊的控制按鈕
+
+        // --- 新增：刪除按鈕 ---
+        const deleteBtn = document.createElement('button');
+        deleteBtn.id = 'delete-submission-btn';
+        deleteBtn.textContent = '刪除此提交';
+        deleteBtn.onclick = () => {
+            if (confirm(`確定要永久刪除「${submission.className}班 - 第${submission.groupNum}組」的答案嗎？此操作無法復原。`)) {
+                db.collection('submissions').doc(submission.id).delete()
+                    .then(() => {
+                        alert('刪除成功！');
+                        // 清空顯示區
+                        submissionHeader.textContent = '請選擇一個組別來查看答案';
+                        submissionContent.innerHTML = '';
+                        submissionControls.innerHTML = '';
+                    })
+                    .catch(error => {
+                        console.error("刪除失敗: ", error);
+                        alert('刪除失敗，請檢查網絡或聯絡老師。');
+                    });
+            }
+        };
+        submissionControls.appendChild(deleteBtn);
+        // -----------------------
 
         const imageContainer = document.createElement('div');
         imageContainer.id = 'image-container';
@@ -95,34 +104,34 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.textContent = marker.explanation;
             
             // --- 電腦版無法隱藏終極修正 ---
-            // **策略：使用單一指揮官 (currentlyOpenBox) 來管理狀態**
+            // **策略：每次點擊都先關閉所有，再判斷是否要打開新的**
             markerDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // 如果點擊的正是已打開的，就關閉它
-                if (currentlyOpenBox === explanationDiv) {
-                    explanationDiv.classList.remove('visible');
-                    currentlyOpenBox = null; // 指揮官下台
-                } else {
-                    // 如果有其他已打開的，先命令它關閉
-                    if (currentlyOpenBox) {
-                        currentlyOpenBox.classList.remove('visible');
-                    }
-                    // 打開新的，並計算位置
+                
+                const wasVisible = explanationDiv.classList.contains('visible');
+                
+                // 步驟 1: 無條件關閉所有已打開的解釋框
+                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                    box.classList.remove('visible');
+                });
+                
+                // 步驟 2: 如果剛剛點擊的這個框之前是關閉的，就打開它
+                if (!wasVisible) {
                     explanationDiv.classList.add('visible');
                     adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
-                    currentlyOpenBox = explanationDiv; // 新指揮官上任
                 }
+                // 如果是打開的，經過步驟1後就會被關閉，流程結束。
             });
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        imageContainer.addEventListener('click', () => {
-            if (currentlyOpenBox) {
-                currentlyOpenBox.classList.remove('visible');
-                currentlyOpenBox = null;
+        imageContainer.addEventListener('click', (e) => {
+            if (!e.target.closest('.submission-marker')) {
+                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                    box.classList.remove('visible');
+                });
             }
         });
         submissionContent.appendChild(imageContainer);
