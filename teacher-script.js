@@ -135,4 +135,29 @@ document.addEventListener('DOMContentLoaded', function() {
             // 步驟 2: 如果剛剛點擊的這個框之前是關閉的，就打開它
             if (!wasVisible) {
                 targetExplanation.classList.add('visible');
-                adjustBoxPosition(targetExplanation, 
+                adjustBoxPosition(targetExplanation, clickedMarker, imageContainer);
+            }
+        });
+    }
+
+    function adjustBoxPosition(box, marker, container) {
+        // ... (這個函式不變，保持原樣)
+        box.style.visibility = 'hidden';
+        box.style.display = 'block';
+        const cRect = container.getBoundingClientRect();
+        const mRect = marker.getBoundingClientRect();
+        const bRect = box.getBoundingClientRect();
+        let top = mRect.bottom - cRect.top + 10;
+        let left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
+        if (top + bRect.height > cRect.height && mRect.top - cRect.top > bRect.height) { top = mRect.top - cRect.top - bRect.height - 10; }
+        if (left < 0) left = 5;
+        if (left + bRect.width > cRect.width) { left = cRect.width - bRect.width - 5; }
+        if (top < 0) top = 5;
+        if (top + bRect.height > cRect.height) { top = cRect.height - bRect.height - 5; }
+        box.style.top = `${top}px`;
+        box.style.left = `${left}px`;
+        box.style.visibility = 'visible';
+        box.style.display = ''; // 清除 display: block
+        box.classList.add('visible'); // 重新加上 visible
+    }
+});
