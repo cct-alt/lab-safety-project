@@ -4,10 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const submissionContent = document.getElementById('submission-content');
     const classFilter = document.getElementById('class-filter');
 
-    let allSubmissions = []; // 存儲所有提交的原始數據
-    let currentlyOpenBox = null; // 全局追蹤變數，解決點擊衝突問題
+    let allSubmissions = []; 
+    let currentlyOpenBox = null; 
 
-    // 監聽 Firebase 數據的實時變化
     db.collection('submissions').onSnapshot(snapshot => {
         allSubmissions = [];
         const classSet = new Set();
@@ -20,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // --- iPad 篩選器終極修正 ---
-        // **策略：使用 setTimeout 延遲執行，強制 Safari 渲染**
         setTimeout(() => {
             const currentSelection = classFilter.value;
             const sortedClasses = Array.from(classSet).sort();
@@ -32,13 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             classFilter.innerHTML = optionsHtml;
 
-            // 嘗試恢復之前的選擇
             if (Array.from(classFilter.options).some(opt => opt.value === currentSelection)) {
                 classFilter.value = currentSelection;
             }
             renderGroupList();
-        }, 10); // 延遲 10 毫秒，給瀏覽器反應時間
-
+        }, 10); 
     });
 
     classFilter.addEventListener('change', renderGroupList);
@@ -74,11 +69,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displaySubmission(submission) {
         submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
-        submissionContent.innerHTML = ''; // 清空先前內容
-        currentlyOpenBox = null; // 切換組別時，重置指揮官
+        submissionContent.innerHTML = ''; 
+        currentlyOpenBox = null; 
 
         const imageContainer = document.createElement('div');
         imageContainer.id = 'image-container';
+        
+        // --- 針對 iPad 的核心修復 ---
+        // 強制讓 iOS Safari 認知此容器是可點擊的，確保點擊背景能順利關閉視窗
+        imageContainer.style.cursor = 'pointer'; 
+        imageContainer.style.WebkitTapHighlightColor = 'transparent'; // 移除點擊閃爍
+
         const img = document.createElement('img');
         img.src = `images/lab_safety_${submission.imageNum}.png`;
         img.id = 'activity-image';
@@ -95,37 +96,42 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // --- 核心修正：點擊標示的事件監聽 ---
-            markerDiv.addEventListener('click', (e) => {
+            // 點擊事件處理
+            const handleToggle = (e) => {
+                e.preventDefault(); // 阻止 iOS 預設行為
                 e.stopPropagation();
 
-                // 如果點擊的正是已打開的，就關閉它
                 if (currentlyOpenBox === explanationDiv) {
                     explanationDiv.classList.remove('visible');
-                    currentlyOpenBox = null; // 指揮官下台
+                    currentlyOpenBox = null; 
                 } else {
-                    // 如果有其他已打開的，先命令它關閉
                     if (currentlyOpenBox) {
                         currentlyOpenBox.classList.remove('visible');
                     }
-                    // 打開新的，並計算位置
                     explanationDiv.classList.add('visible');
                     adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
-                    currentlyOpenBox = explanationDiv; // 新指揮官上任
+                    currentlyOpenBox = explanationDiv; 
                 }
-            });
+            };
+
+            // 為了最大相容性，使用 click 即可，前面的 cursor: pointer 已解決背景問題
+            markerDiv.addEventListener('click', handleToggle);
+            
+            // 防止點擊解釋框內部文字時關閉視窗
+            explanationDiv.addEventListener('click', (e) => e.stopPropagation());
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        // 點擊圖片容器空白處，隱藏已打開的解釋框
+        // 點擊背景隱藏
         imageContainer.addEventListener('click', () => {
             if (currentlyOpenBox) {
                 currentlyOpenBox.classList.remove('visible');
                 currentlyOpenBox = null;
             }
         });
+        
         submissionContent.appendChild(imageContainer);
     }
 
@@ -136,20 +142,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let top, left;
 
-        // 預設位置在標示下方
         top = mRect.bottom - cRect.top + 10;
         left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
 
-        // 如果下方空間不足，且上方空間足夠，則移到上方
         if (top + bRect.height > cRect.height && (mRect.top - cRect.top) > bRect.height) {
             top = mRect.top - cRect.top - bRect.height - 10;
         }
 
-        // 避免左右超出邊界
         if (left < 0) left = 5;
         if (left + bRect.width > cRect.width) left = cRect.width - bRect.width - 5;
-        
-        // 避免上下超出邊界
         if (top < 0) top = 5;
         if (top + bRect.height > cRect.height) top = cRect.height - bRect.height - 5;
 
