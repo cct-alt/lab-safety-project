@@ -73,7 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySubmission(submission) {
-        submissionContent.innerHTML = `<h2 id="submission-header">${submission.className}班 - 第${submission.groupNum}組的答案</h2>`;
+        submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
+        submissionContent.innerHTML = ''; // 清空先前內容
         currentlyOpenBox = null; // 切換組別時，重置指揮官
 
         const imageContainer = document.createElement('div');
@@ -94,8 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // --- 電腦版無法隱藏終極修正 ---
-            // **策略：使用單一指揮官 (currentlyOpenBox) 來管理狀態**
+            // --- 核心修正：點擊標示的事件監聽 ---
             markerDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
 
@@ -119,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
             imageContainer.appendChild(explanationDiv);
         });
         
+        // 點擊圖片容器空白處，隱藏已打開的解釋框
         imageContainer.addEventListener('click', () => {
             if (currentlyOpenBox) {
                 currentlyOpenBox.classList.remove('visible');
@@ -129,20 +130,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function adjustBoxPosition(box, marker, container) {
-        box.style.visibility = 'hidden';
-        box.style.display = 'block';
         const cRect = container.getBoundingClientRect();
         const mRect = marker.getBoundingClientRect();
         const bRect = box.getBoundingClientRect();
-        let top = mRect.bottom - cRect.top + 10;
-        let left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
-        if (top + bRect.height > cRect.height && mRect.top - cRect.top > bRect.height) { top = mRect.top - cRect.top - bRect.height - 10; }
-        if (left < 0) { left = 5; }
-        if (left + bRect.width > cRect.width) { left = cRect.width - bRect.width - 5; }
-        if (top < 0) { top = 5; }
-        if (top + bRect.height > cRect.height) { top = cRect.height - bRect.height - 5; }
+
+        let top, left;
+
+        // 預設位置在標示下方
+        top = mRect.bottom - cRect.top + 10;
+        left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
+
+        // 如果下方空間不足，且上方空間足夠，則移到上方
+        if (top + bRect.height > cRect.height && (mRect.top - cRect.top) > bRect.height) {
+            top = mRect.top - cRect.top - bRect.height - 10;
+        }
+
+        // 避免左右超出邊界
+        if (left < 0) left = 5;
+        if (left + bRect.width > cRect.width) left = cRect.width - bRect.width - 5;
+        
+        // 避免上下超出邊界
+        if (top < 0) top = 5;
+        if (top + bRect.height > cRect.height) top = cRect.height - bRect.height - 5;
+
         box.style.top = `${top}px`;
         box.style.left = `${left}px`;
-        box.style.visibility = 'visible';
     }
 });
