@@ -16,12 +16,7 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     box-sizing: border-box;
 }
-h1, h2 {
-    text-align: center;
-    color: #333;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
+h1, h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
 .hidden { display: none !important; }
 button { cursor: pointer; transition: background-color 0.2s; }
 
@@ -51,26 +46,20 @@ select, .button-group button { width: 100%; max-width: 320px; padding: 12px; bor
 textarea.error { border: 2px solid #dc3545; }
 .submission-explanation::before { content: "學生的解釋："; font-weight: bold; color: #333; display: block; margin-bottom: 8px; }
 
-/* --- Teacher Layout (Final Fix for All Devices) --- */
-.teacher-layout::after { /* 清除浮動，確保父容器高度正確 */
-    content: "";
-    display: table;
-    clear: both;
+/* --- Teacher Layout (Final Grid Fix for ALL Devices) --- */
+.teacher-layout {
+    display: grid; /* 使用 Grid 佈局 */
+    grid-template-columns: 1fr 2fr; /* 創建兩欄，比例為 1:2 */
+    gap: 25px; /* 欄間距 */
 }
 #group-list-container {
-    float: left; /* 向左浮動 */
-    width: 33%;
-    min-width: 250px;
-    padding-right: 25px; /* 增加間距 */
-    box-sizing: border-box;
+    /* 這個容器不需要額外樣式，Grid 會自動處理 */
 }
 #submission-view-container {
-    float: left; /* 向左浮動 */
-    width: 67%;
-    box-sizing: border-box;
+    min-width: 0; /* 關鍵：允許此欄在必要時被壓縮，防止內容溢出 */
 }
 #group-list { max-height: 70vh; overflow-y: auto; margin-top: 15px; }
-.group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+.group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; box-sizing: border-box; }
 .group-button.active { background-color: #007bff; color: white; }
 .filter-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 #submission-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; min-height: 40px; }
