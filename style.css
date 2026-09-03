@@ -1,66 +1,42 @@
-/* --- Global Styles --- */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f4f6f9;
-    margin: 0;
-    padding: 20px;
-    box-sizing: border-box;
-}
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    box-sizing: border-box;
-}
+/* --- Global --- */
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; box-sizing: border-box; }
+.container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
 h1, h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
 .hidden { display: none !important; }
-button { cursor: pointer; transition: background-color 0.2s; }
+button { cursor: pointer; }
 
-/* --- Login & Controls --- */
+/* --- Controls --- */
+select, .button-group button, #delete-submission-btn { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+.button-group button, #delete-submission-btn { background-color: #007bff; color: white; border: none; font-weight: bold; width: auto; }
+#delete-submission-btn { background-color: #dc3545; padding: 8px 15px; }
 #login-view { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-select, .button-group button { width: 100%; max-width: 320px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-.button-group button { background-color: #007bff; color: white; border: none; font-weight: bold; }
-.button-group button:hover { background-color: #0056b3; }
+select { max-width: 320px; width: 100%; }
 
 /* --- Image & Markers --- */
-#image-container { position: relative; margin-top: 20px; max-width: 100%; }
+#image-container { position: relative; margin-top: 20px; }
 #activity-image { display: block; width: 100%; height: auto; border-radius: 8px; }
-.marker, .submission-marker { position: absolute; width: 30px; height: 30px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+.marker, .submission-marker { position: absolute; width: 30px; height: 30px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 .marker { background-color: rgba(255, 0, 0, 0.8); }
 .submission-marker { background-color: rgba(0, 123, 255, 0.8); }
 
 /* --- Explanation Box --- */
-.explanation-box, .submission-explanation { position: absolute; width: 260px; padding: 15px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); z-index: 20; box-sizing: border-box; font-size: 15px; line-height: 1.5; }
+.explanation-box, .submission-explanation { position: absolute; width: 260px; padding: 15px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); z-index: 20; font-size: 15px; line-height: 1.5; }
 .explanation-box { background-color: white; border-top: 4px solid #007bff; }
-.submission-explanation { background-color: #fff; border-top: 4px solid #fd7e14; }
-.explanation-box textarea { width: 100%; height: 90px; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 15px; box-sizing: border-box; }
+.submission-explanation { background-color: #fff; border-top: 4px solid #fd7e14; display: none; }
+.submission-explanation.visible { display: block; }
+.explanation-box textarea { width: 100%; height: 90px; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 15px; }
 .explanation-controls { display: flex; justify-content: flex-end; gap: 8px; }
-.explanation-controls button { padding: 5px 12px; font-size: 12px; width: auto; border-radius: 5px; }
+.explanation-controls button { padding: 5px 12px; font-size: 12px; }
 .hide-btn { background-color: #6c757d; }
 .delete-btn { background-color: #dc3545; }
-.marker.error { border-color: #ffc107; }
-textarea.error { border: 2px solid #dc3545; }
-.submission-explanation::before { content: "學生的解釋："; font-weight: bold; color: #333; display: block; margin-bottom: 8px; }
+.marker.error, textarea.error { border-color: #dc3545 !important; }
 
-/* --- Teacher Layout (Final Grid Fix for ALL Devices) --- */
-.teacher-layout {
-    display: grid; /* 使用 Grid 佈局 */
-    grid-template-columns: 1fr 2fr; /* 創建兩欄，比例為 1:2 */
-    gap: 25px; /* 欄間距 */
-}
-#group-list-container {
-    /* 這個容器不需要額外樣式，Grid 會自動處理 */
-}
-#submission-view-container {
-    min-width: 0; /* 關鍵：允許此欄在必要時被壓縮，防止內容溢出 */
-}
+/* --- Teacher Layout (Final Flexbox Fix) --- */
+.teacher-layout { display: flex; flex-wrap: nowrap; gap: 25px; }
+#group-list-container { flex: 1 1 300px; min-width: 280px; }
+#submission-view-container { flex: 2 1 60%; min-width: 0; } /* min-width: 0 is the key for Safari flexbug */
 #group-list { max-height: 70vh; overflow-y: auto; margin-top: 15px; }
-.group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; box-sizing: border-box; }
+.group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
 .group-button.active { background-color: #007bff; color: white; }
 .filter-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 #submission-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; min-height: 40px; }
-#delete-submission-btn { background-color: #dc3545; color: white; width: auto; padding: 8px 15px; border-radius: 5px; }
