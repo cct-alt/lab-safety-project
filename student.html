@@ -2,39 +2,43 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>實驗室安全挑戰 - 學生端</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- 核心修改：在檔名後加上 ?v=1.0 -->
+    <link rel="stylesheet" href="style.css?v=1.0">
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- 登入頁 -->
         <div id="login-view">
             <h1>實驗室安全挑戰</h1>
-            <select id="class-select"></select>
-            <select id="group-select"></select>
-            <button id="start-btn">開始挑戰</button>
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="class-select">選擇班別：</label>
+                    <select id="class-select"></select>
+                </div>
+                <div class="form-group">
+                    <label for="group-select">選擇組別：</label>
+                    <select id="group-select"></select>
+                </div>
+                <button id="start-btn">開始作答</button>
+            </div>
         </div>
 
-        <!-- 活動頁 -->
-        <div id="activity-view" style="display:none;">
+        <div id="activity-view" style="display: none;">
             <h2 id="info-header"></h2>
-            <p>請點擊圖片中您認為危險的地方，並寫下解釋。</p>
             <div id="image-container">
-                <img id="activity-image" src="" alt="實驗室圖片">
+                <img id="activity-image" alt="實驗室安全圖片">
             </div>
-            <div class="button-group">
+            <div class="main-controls">
                 <button id="submit-btn">提交答案</button>
-                <button id="edit-btn" style="display:none;">修改答案</button>
+                <button id="edit-btn" style="display: none;">修改答案</button>
             </div>
         </div>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- 專案程式 -->
-    <script src="firebase-config.js"></script>
-    <script src="student-script.js"></script>
+    <!-- 核心修改：在檔名後加上 ?v=1.0 -->
+    <script src="student-script.js?v=1.0"></script>
 </body>
 </html>

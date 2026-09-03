@@ -2,41 +2,38 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>實驗室安全挑戰 - 老師端</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>實驗室安全挑戰 - 老師儀表板</title>
+    <!-- 核心修改：在檔名後加上 ?v=1.0 -->
+    <link rel="stylesheet" href="style.css?v=1.0">
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>老師儀表板</h1>
-        <div class="teacher-layout">
-            <div id="group-list-container">
-                <h2>已提交組別</h2>
-                <!-- *** 新增：班級篩選器 *** -->
-                <div class="filter-container">
-                    <label for="class-filter">篩選班級:</label>
-                    <select id="class-filter">
-                        <option value="all">所有班級</option>
-                    </select>
-                </div>
-                <div id="group-list">
-                    <p>正在等待學生提交...</p>
-                </div>
+    <div class="teacher-container">
+        <aside class="sidebar">
+            <h1>各組答案</h1>
+            <div class="filter-container">
+                <label for="class-filter">篩選班級：</label>
+                <select id="class-filter">
+                    <option value="all">所有班級</option>
+                </select>
             </div>
-            <div id="submission-view-container">
-                <h2 id="submission-header">請選擇一個組別來查看答案</h2>
-                <div id="submission-content">
-                    <!-- 學生答案會顯示在這裡 -->
-                </div>
+            <div id="group-list">
+                <p>正在等待學生提交...</p>
             </div>
-        </div>
+        </aside>
+        <main class="main-content">
+            <header>
+                <h2 id="submission-header">請從左側選擇一個組別來查看答案</h2>
+            </header>
+            <section id="submission-content">
+                <!-- 學生提交的圖片和標示將顯示在這裡 -->
+            </section>
+        </main>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- 專案程式 -->
-    <script src="firebase-config.js"></script>
-    <script src="teacher-script.js"></script>
+    <!-- 核心修改：在檔名後加上 ?v=1.0 -->
+    <script src="teacher-script.js?v=1.0"></script>
 </body>
 </html>
