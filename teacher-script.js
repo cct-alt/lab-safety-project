@@ -74,11 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const imageContainer = document.createElement('div');
         imageContainer.id = 'image-container';
-        
-        // --- 針對 iPad 的核心修復 ---
-        // 強制讓 iOS Safari 認知此容器是可點擊的，確保點擊背景能順利關閉視窗
+        // 確保 iOS Safari 認知此為可點擊區域
         imageContainer.style.cursor = 'pointer'; 
-        imageContainer.style.WebkitTapHighlightColor = 'transparent'; // 移除點擊閃爍
+        imageContainer.style.WebkitTapHighlightColor = 'transparent';
 
         const img = document.createElement('img');
         img.src = `images/lab_safety_${submission.imageNum}.png`;
@@ -91,14 +89,17 @@ document.addEventListener('DOMContentLoaded', function() {
             markerDiv.style.left = `${marker.x}%`;
             markerDiv.style.top = `${marker.y}%`;
             markerDiv.textContent = index + 1;
+            // 賦予 marker 明確的點擊樣式
+            markerDiv.style.cursor = 'pointer';
             
             const explanationDiv = document.createElement('div');
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // 點擊事件處理
+            // 核心處理邏輯
             const handleToggle = (e) => {
-                e.preventDefault(); // 阻止 iOS 預設行為
+                // 阻止預設行為與事件冒泡，防止觸發背景的點擊
+                e.preventDefault();
                 e.stopPropagation();
 
                 if (currentlyOpenBox === explanationDiv) {
@@ -114,23 +115,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
 
-            // 為了最大相容性，使用 click 即可，前面的 cursor: pointer 已解決背景問題
+            // 同時綁定 click (電腦) 與 touchend (iPad)
+            // touchend 發生在手指離開螢幕時，是最接近點擊行為的觸控事件
             markerDiv.addEventListener('click', handleToggle);
+            markerDiv.addEventListener('touchend', handleToggle);
             
-            // 防止點擊解釋框內部文字時關閉視窗
-            explanationDiv.addEventListener('click', (e) => e.stopPropagation());
+            // 點擊解釋框本身時，不要觸發任何關閉動作
+            const stopProp = (e) => e.stopPropagation();
+            explanationDiv.addEventListener('click', stopProp);
+            explanationDiv.addEventListener('touchend', stopProp);
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        // 點擊背景隱藏
-        imageContainer.addEventListener('click', () => {
+        // 點擊背景隱藏：同樣綁定雙事件
+        const closeAnyOpenBox = (e) => {
+             // 若點擊目標本身就是標記或解釋框，則不處理（交由它們自己的事件處理）
+            if(e.target.classList.contains('submission-marker') || e.target.classList.contains('submission-explanation')) return;
+            
             if (currentlyOpenBox) {
                 currentlyOpenBox.classList.remove('visible');
                 currentlyOpenBox = null;
             }
-        });
+        };
+
+        imageContainer.addEventListener('click', closeAnyOpenBox);
+        imageContainer.addEventListener('touchend', closeAnyOpenBox);
         
         submissionContent.appendChild(imageContainer);
     }
