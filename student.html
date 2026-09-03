@@ -8,24 +8,32 @@
 </head>
 <body>
     <div class="container">
+        <!-- 登入頁 -->
         <div id="login-view">
             <h1>實驗室安全挑戰</h1>
             <select id="class-select"></select>
             <select id="group-select"></select>
             <button id="start-btn">開始挑戰</button>
         </div>
-        <div id="activity-view" class="hidden">
+
+        <!-- 活動頁 -->
+        <div id="activity-view" style="display:none;">
             <h2 id="info-header"></h2>
             <p>請點擊圖片中您認為危險的地方，並寫下解釋。</p>
-            <div id="image-container"></div>
+            <div id="image-container">
+                <img id="activity-image" src="" alt="實驗室圖片">
+            </div>
             <div class="button-group">
                 <button id="submit-btn">提交答案</button>
-                <button id="edit-btn" class="hidden">修改答案</button>
+                <button id="edit-btn" style="display:none;">修改答案</button>
             </div>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- 專案程式 -->
     <script src="firebase-config.js"></script>
     <script src="student-script.js"></script>
 </body>
