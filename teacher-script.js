@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let allSubmissions = [];
 
-    // 監聽 Firebase 數據，並用 setTimeout 確保 iPad 正常渲染
     db.collection('submissions').onSnapshot(snapshot => {
         allSubmissions = [];
         const classSet = new Set();
@@ -86,6 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
         img.id = 'activity-image';
         imageContainer.appendChild(img);
 
+        const allExplanationDivs = []; // 存儲這個組別所有的解釋框
+
         submission.markers.forEach((marker, index) => {
             const markerDiv = document.createElement('div');
             markerDiv.className = 'submission-marker';
@@ -97,50 +98,41 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // 關聯標示和解釋框
-            markerDiv.dataset.controls = `explanation-${marker.id}`;
-            explanationDiv.id = `explanation-${marker.id}`;
+            allExplanationDivs.push(explanationDiv); // 加入到列表中
+
+            // --- 終極修正：最簡單、最直接的獨立事件監聽 ---
+            markerDiv.addEventListener('click', function(e) {
+                e.stopPropagation(); // 阻止事件冒泡，極其重要！
+
+                const isCurrentlyVisible = explanationDiv.classList.contains('visible');
+
+                // 步驟 1: 無條件關閉所有其他的解釋框
+                allExplanationDivs.forEach(div => {
+                    if (div !== explanationDiv) {
+                        div.classList.remove('visible');
+                    }
+                });
+
+                // 步驟 2: 只對當前點擊的這一個，執行開/關切換
+                if (isCurrentlyVisible) {
+                    explanationDiv.classList.remove('visible');
+                } else {
+                    explanationDiv.classList.add('visible');
+                    adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
+                }
+            });
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
+        imageContainer.addEventListener('click', (e) => {
+            if (!e.target.closest('.submission-marker')) {
+                allExplanationDivs.forEach(div => div.classList.remove('visible'));
+            }
+        });
         submissionContent.appendChild(imageContainer);
     }
-    
-    // --- 全局點擊監聽器：終極解決方案 ---
-    document.addEventListener('click', function (e) {
-        const target = e.target;
-        
-        // 情況1：如果點擊的是一個數字標示
-        if (target.matches('.submission-marker')) {
-            const explanationId = target.dataset.controls;
-            const explanationDiv = document.getElementById(explanationId);
-            
-            if (!explanationDiv) return;
-
-            const wasVisible = explanationDiv.classList.contains('visible');
-            
-            // 無條件關閉所有已打開的
-            document.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                box.classList.remove('visible');
-            });
-
-            // 如果之前是關閉的，就打開它
-            if (!wasVisible) {
-                explanationDiv.classList.add('visible');
-                adjustBoxPosition(explanationDiv, target, target.closest('#image-container'));
-            }
-            return;
-        }
-
-        // 情況2：如果點擊的不是標示，也不是解釋框內部，就關閉所有
-        if (!target.closest('.submission-marker') && !target.closest('.submission-explanation')) {
-            document.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                box.classList.remove('visible');
-            });
-        }
-    });
 
     function adjustBoxPosition(box, marker, container) {
         box.style.visibility = 'hidden';
