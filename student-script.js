@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let markers = []; 
     let isSubmitted = false;
 
-    // --- 初始化 (不變) ---
+    // --- 初始化 ---
     const classes = ['1A', '1B', '1C', '1D', '2A', '2B', '2C', '2D', '3A', '3B', '3C', '3D', '4A', '4B', '4C', '4D', '5A', '5B', '5C', '5D', '6A', '6B', '6C', '6D'];
     classes.forEach(c => { const option = document.createElement('option'); option.value = c; option.textContent = c + '班'; classSelect.appendChild(option); });
     for (let i = 1; i <= 10; i++) { const option = document.createElement('option'); option.value = i; option.textContent = `第${i}組`; groupSelect.appendChild(option); }
@@ -87,9 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'explanation-controls';
 
+        // --- 核心修改：將「隱藏」改為「確認」 ---
         const hideBtn = document.createElement('button');
-        hideBtn.className = 'hide-btn';
-        hideBtn.textContent = '隱藏';
+        hideBtn.className = 'hide-btn'; 
+        hideBtn.textContent = '確認';  // <--- 這裡改成了「確認」
         hideBtn.onclick = () => { explanationBox.classList.add('hidden'); };
 
         const deleteBtn = document.createElement('button');
@@ -134,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
         box.style.left = `${left}px`;
     }
 
-    // *** 核心修改：提交按鈕的事件 ***
     submitBtn.addEventListener('click', async () => {
         // 1. 清除之前所有的錯誤提示
         document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
