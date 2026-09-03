@@ -85,8 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
         img.id = 'activity-image';
         imageContainer.appendChild(img);
 
-        const allExplanationDivs = []; 
-
         submission.markers.forEach((marker, index) => {
             const markerDiv = document.createElement('div');
             markerDiv.className = 'submission-marker';
@@ -97,38 +95,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const explanationDiv = document.createElement('div');
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
-            
-            allExplanationDivs.push(explanationDiv);
 
-            markerDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-
-                const isCurrentlyVisible = explanationDiv.classList.contains('visible');
-
-                allExplanationDivs.forEach(div => {
-                    if (div !== explanationDiv) {
-                        div.classList.remove('visible');
-                    }
-                });
-
-                if (isCurrentlyVisible) {
-                    explanationDiv.classList.remove('visible');
-                } else {
-                    explanationDiv.classList.add('visible');
-                    adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
-                }
-            });
+            // 建立標示和解釋框之間的唯一關聯
+            const uniqueId = `explanation-${marker.id}`;
+            markerDiv.dataset.targetId = uniqueId;
+            explanationDiv.id = uniqueId;
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        imageContainer.addEventListener('click', (e) => {
-            if (!e.target.closest('.submission-marker')) {
-                allExplanationDivs.forEach(div => div.classList.remove('visible'));
-            }
-        });
         submissionContent.appendChild(imageContainer);
+        
+        // --- 終極修正：使用事件委派 ---
+        // 只在 imageContainer 上附加一個監聽器
+        imageContainer.addEventListener('click', function(e) {
+            const clickedMarker = e.target.closest('.submission-marker');
+
+            // 如果點擊的不是一個 marker，就關閉所有解釋框
+            if (!clickedMarker) {
+                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                    box.classList.remove('visible');
+                });
+                return;
+            }
+
+            // 如果點擊的是一個 marker
+            const targetId = clickedMarker.dataset.targetId;
+            const targetExplanation = document.getElementById(targetId);
+
+            if (!targetExplanation) return;
+
+            const wasVisible = targetExplanation.classList.contains('visible');
+
+            // 步驟 1: 無條件關閉所有已打開的解釋框
+            imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                box.classList.remove('visible');
+            });
+
+            // 步驟 2: 如果剛剛點擊的這個框之前是關閉的，就打開它
+            if (!wasVisible) {
+                targetExplanation.classList.add('visible');
+                adjustBoxPosition(targetExplanation, clickedMarker, imageContainer);
+            }
+            // 如果是打開的，經過步驟1後就會被關閉，流程結束。
+        });
     }
 
     function adjustBoxPosition(box, marker, container) {
