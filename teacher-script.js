@@ -44,31 +44,29 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const explanationDiv = document.createElement('div');
             explanationDiv.className = 'submission-explanation';
-            explanationDiv.style.left = `${marker.x}%`;
-            explanationDiv.style.top = `${marker.y}%`;
-            // 預設放在標示下方
-            explanationDiv.style.transform = `translate(-50%, 30px)`; 
             explanationDiv.textContent = marker.explanation;
             
-            // *** 核心 Bug 修復 ***
             markerDiv.addEventListener('click', (e) => {
-                e.stopPropagation(); // 防止點到圖片
+                e.stopPropagation();
 
-                // 點擊別的數字時，先關掉已打開的
                 const currentlyVisible = imageContainer.querySelector('.submission-explanation.visible');
                 if (currentlyVisible && currentlyVisible !== explanationDiv) {
                     currentlyVisible.classList.remove('visible');
                 }
                 
-                // 切換當前點擊的這一個
-                explanationDiv.classList.toggle('visible');
+                // 切換顯示狀態
+                const isNowVisible = explanationDiv.classList.toggle('visible');
+
+                // *** 核心 Bug 修復：如果解釋框變為可見，則調整其位置 ***
+                if (isNowVisible) {
+                    adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
+                }
             });
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        // 點擊圖片任何地方，關閉所有解釋框
         imageContainer.addEventListener('click', (e) => {
             if (!e.target.closest('.submission-marker')) {
                 imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
@@ -78,5 +76,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         submissionContent.appendChild(imageContainer);
+    }
+
+    // *** 新增：從學生版移植過來的智慧定位函式 ***
+    function adjustBoxPosition(box, marker, container) {
+        // 為了準確計算，先讓它顯示出來 (但透明)，計算完再恢復
+        box.style.visibility = 'hidden';
+        box.style.display = 'block';
+
+        const containerRect = container.getBoundingClientRect();
+        const markerRect = marker.getBoundingClientRect();
+        const boxRect = box.getBoundingClientRect();
+
+        // 預設位置：在標示的右下方
+        let top = markerRect.top - containerRect.top + 30; // 往下30px
+        let left = markerRect.left - containerRect.left + 15; // 往右15px
+
+        // 檢查右邊界：如果超出，則將解釋框移到標示的左側
+        if (left + boxRect.width > containerRect.width) {
+            left = markerRect.left - containerRect.left - boxRect.width - 15;
+        }
+        // 檢查左邊界：如果超出，則移回標示的右側
+        if (left < 0) {
+            left = markerRect.left - containerRect.left + 15;
+        }
+        // 檢查下邊界：如果超出，則將解釋框移到標示的上方
+        if (top + boxRect.height > containerRect.height) {
+            top = markerRect.top - containerRect.top - boxRect.height - 15;
+        }
+         // 檢查上邊界：如果超出，則移回標示的下方
+        if (top < 0) {
+            top = markerRect.top - containerRect.top + 30;
+        }
+
+        box.style.top = `${top}px`;
+        box.style.left = `${left}px`;
+        
+        // 計算完成後，恢復正常顯示
+        box.style.visibility = 'visible';
     }
 });
