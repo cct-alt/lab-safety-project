@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const classFilter = document.getElementById('class-filter');
 
     let allSubmissions = [];
+    let currentlyOpen = null; // 全局追蹤變數，唯一的狀態管理器
 
     db.collection('submissions').onSnapshot(snapshot => {
         allSubmissions = [];
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
         submissionContent.innerHTML = '';
         submissionControls.innerHTML = '';
+        currentlyOpen = null; // 切換組別時，重置追蹤器
 
         const deleteBtn = document.createElement('button');
         deleteBtn.id = 'delete-submission-btn';
@@ -95,51 +97,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const explanationDiv = document.createElement('div');
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
+            
+            // --- 終極修正：回歸最純粹的獨立事件監聽 ---
+            markerDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
 
-            // 建立標示和解釋框之間的唯一關聯
-            const uniqueId = `explanation-${marker.id}`;
-            markerDiv.dataset.targetId = uniqueId;
-            explanationDiv.id = uniqueId;
+                // 步驟 1: 在任何操作之前，先判斷本次點擊的是否就是已打開的那個
+                const clickedTheSameBox = (currentlyOpen === explanationDiv);
+
+                // 步驟 2: 無條件關閉當前已打開的框（如果有的話）
+                if (currentlyOpen) {
+                    currentlyOpen.classList.remove('visible');
+                }
+                
+                // 步驟 3: 根據第一步的判斷結果來決定下一步
+                // 如果點擊的不是同一個框 (即想打開一個新的)
+                if (!clickedTheSameBox) {
+                    explanationDiv.classList.add('visible');
+                    adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
+                    currentlyOpen = explanationDiv; // 更新追蹤器
+                } else {
+                // 如果點擊的是同一個框 (即想關閉它)，經過步驟2它已經被關閉了
+                    currentlyOpen = null; // 清空追蹤器
+                }
+            });
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        submissionContent.appendChild(imageContainer);
-        
-        // --- 終極修正：使用事件委派 ---
-        // 只在 imageContainer 上附加一個監聽器
-        imageContainer.addEventListener('click', function(e) {
-            const clickedMarker = e.target.closest('.submission-marker');
-
-            // 如果點擊的不是一個 marker，就關閉所有解釋框
-            if (!clickedMarker) {
-                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                    box.classList.remove('visible');
-                });
-                return;
+        imageContainer.addEventListener('click', (e) => {
+            if (!e.target.closest('.submission-marker') && currentlyOpen) {
+                currentlyOpen.classList.remove('visible');
+                currentlyOpen = null;
             }
-
-            // 如果點擊的是一個 marker
-            const targetId = clickedMarker.dataset.targetId;
-            const targetExplanation = document.getElementById(targetId);
-
-            if (!targetExplanation) return;
-
-            const wasVisible = targetExplanation.classList.contains('visible');
-
-            // 步驟 1: 無條件關閉所有已打開的解釋框
-            imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                box.classList.remove('visible');
-            });
-
-            // 步驟 2: 如果剛剛點擊的這個框之前是關閉的，就打開它
-            if (!wasVisible) {
-                targetExplanation.classList.add('visible');
-                adjustBoxPosition(targetExplanation, clickedMarker, imageContainer);
-            }
-            // 如果是打開的，經過步驟1後就會被關閉，流程結束。
         });
+        submissionContent.appendChild(imageContainer);
     }
 
     function adjustBoxPosition(box, marker, container) {
