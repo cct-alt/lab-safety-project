@@ -45,8 +45,17 @@ select, .button-group button {
 .button-group button:hover { background-color: #0056b3; }
 
 /* --- Image & Markers (Shared) --- */
-#image-container { position: relative; margin-top: 20px; }
-#activity-image { display: block; width: 100%; height: auto; border-radius: 8px; }
+#image-container {
+    position: relative;
+    margin-top: 20px;
+    max-width: 100%; /* 關鍵：確保容器本身不會超過父元素的寬度 */
+}
+#activity-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
 .marker, .submission-marker {
     position: absolute;
     width: 30px;
@@ -88,28 +97,22 @@ select, .button-group button {
 .delete-btn { background-color: #dc3545; }
 .marker.error { border-color: #ffc107; }
 textarea.error { border: 2px solid #dc3545; }
-/* Add a title to teacher's explanation box */
-.submission-explanation::before {
-    content: "學生的解釋：";
-    font-weight: bold;
-    color: #333;
-    display: block;
-    margin-bottom: 8px;
-}
+.submission-explanation::before { content: "學生的解釋："; font-weight: bold; color: #333; display: block; margin-bottom: 8px; }
 
 /* --- Teacher Layout (Final Fix for iPad) --- */
 .teacher-layout {
     display: flex;
-    flex-wrap: nowrap; /* 確保不換行 */
     gap: 25px;
 }
 #group-list-container {
-    width: 30%; /* 明確設定寬度 */
-    min-width: 250px;
+    width: 33%; /* 明確設定寬度 */
+    min-width: 250px; /* 最小寬度 */
+    flex-shrink: 0; /* 防止此容器被壓縮 */
     box-sizing: border-box;
 }
 #submission-view-container {
-    width: 70%; /* 明確設定寬度 */
+    width: calc(67% - 25px); /* 使用 calc 精確計算剩餘寬度 */
+    flex-grow: 1; /* 允許它填充剩餘空間 */
     box-sizing: border-box;
 }
 #group-list { max-height: 70vh; overflow-y: auto; margin-top: 15px; }

@@ -38,7 +38,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const x = (e.clientX - rect.left) / rect.width * 100;
         const y = (e.clientY - rect.top) / rect.height * 100;
         markers.push({ id: Date.now(), x, y, explanation: '' });
-        renderAllMarkers(false);
+        // *** 核心修改：isInitiallyHidden 設為 false，並只對最新的標示生效 ***
+        renderAllMarkers(false, true); // 重新渲染，但舊的都隱藏
+        const lastMarkerData = markers[markers.length - 1];
+        const lastMarkerDiv = document.querySelector(`.marker[data-id="${lastMarkerData.id}"]`);
+        if (lastMarkerDiv) {
+            const box = lastMarkerDiv.nextElementSibling;
+            box.classList.remove('hidden');
+            adjustBoxPosition(box, lastMarkerDiv, imageContainer);
+        }
     });
 
     submitBtn.addEventListener('click', handleSubmit);
@@ -52,16 +60,16 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.classList.add('hidden');
             editBtn.classList.remove('hidden');
             alert('偵測到您已提交過答案，將載入您先前的作答。');
-            renderAllMarkers(true);
+            renderAllMarkers(true, true);
         }
     }
 
-    function renderAllMarkers(isLocked = false) {
+    function renderAllMarkers(isLocked = false, hideAllBoxes = false) {
         imageContainer.querySelectorAll('.marker, .explanation-box').forEach(el => el.remove());
-        markers.forEach((markerData, index) => createMarkerUI(markerData, index + 1, isLocked));
+        markers.forEach((markerData, index) => createMarkerUI(markerData, index + 1, isLocked, hideAllBoxes));
     }
 
-    function createMarkerUI(markerData, index, isLocked) {
+    function createMarkerUI(markerData, index, isLocked, isInitiallyHidden) {
         const markerDiv = document.createElement('div');
         markerDiv.className = 'marker';
         markerDiv.style.left = `${markerData.x}%`;
@@ -70,7 +78,9 @@ document.addEventListener('DOMContentLoaded', function() {
         markerDiv.dataset.id = markerData.id;
 
         const box = document.createElement('div');
-        box.className = 'explanation-box hidden';
+        box.className = 'explanation-box';
+        if (isInitiallyHidden) box.classList.add('hidden'); // 根據參數決定是否初始隱藏
+        
         const textarea = document.createElement('textarea');
         textarea.value = markerData.explanation;
         textarea.disabled = isLocked;
@@ -87,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteBtn.textContent = '刪除';
         deleteBtn.onclick = () => {
             markers = markers.filter(m => m.id !== markerData.id);
-            renderAllMarkers(false);
+            renderAllMarkers(false, true);
         };
         controls.appendChild(hideBtn);
         if (!isLocked) controls.appendChild(deleteBtn);
@@ -105,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function handleSubmit() {
+        // ... (這部分邏輯不變)
         document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
         const incomplete = markers.filter(m => !m.explanation.trim());
         if (incomplete.length > 0) {
@@ -127,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isSubmitted = true;
         submitBtn.classList.add('hidden');
         editBtn.classList.remove('hidden');
-        renderAllMarkers(true);
+        renderAllMarkers(true, true);
     }
 
     function handleEdit() {
@@ -135,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isSubmitted = false;
         submitBtn.classList.remove('hidden');
         editBtn.classList.add('hidden');
-        renderAllMarkers(false);
+        renderAllMarkers(false, true);
     }
     
     function adjustBoxPosition(box, marker, container) {
@@ -145,9 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let top = mRect.bottom - cRect.top + 10, left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
         if (top + bRect.height > cRect.height && mRect.top - cRect.top > bRect.height) top = mRect.top - cRect.top - bRect.height - 10;
         if (left < 0) left = 5;
-        if (left + bRect.width > cRect.width) left = cRect.width - bRect.width - 5;
+        if (left + bRect.width > cRect.width) { left = cRect.width - bRect.width - 5; }
         if (top < 0) top = 5;
-        if (top + bRect.height > cRect.height) top = cRect.height - bRect.height - 5;
+        if (top + bRect.height > cRect.height) { top = cRect.height - bRect.height - 5; }
         box.style.top = `${top}px`;
         box.style.left = `${left}px`;
         box.style.visibility = 'visible';
