@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實驗室安全挑戰 - 學生端</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 登入頁 -->
+        <div id="login-view">
+            <h1>實驗室安全挑戰</h1>
+            <select id="class-select"></select>
+            <select id="group-select"></select>
+            <button id="start-btn">開始挑戰</button>
+        </div>
+
+        <!-- 活動頁 -->
+        <div id="activity-view" style="display:none;">
+            <h2 id="info-header"></h2>
+            <p>請點擊圖片中您認為危險的地方，並寫下解釋。</p>
+            <div id="image-container">
+                <img id="activity-image" src="" alt="實驗室圖片">
+            </div>
+            <div class="button-group">
+                <button id="submit-btn">提交答案</button>
+                <button id="edit-btn" style="display:none;">修改答案</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- 專案程式 -->
+    <script src="firebase-config.js"></script>
+    <script src="student-script.js"></script>
+</body>
+</html>
