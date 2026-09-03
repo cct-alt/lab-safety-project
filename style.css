@@ -22,72 +22,24 @@ h1, h2 {
     margin-top: 0;
     margin-bottom: 20px;
 }
-.hidden {
-    display: none !important;
-}
-button {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
+.hidden { display: none !important; }
+button { cursor: pointer; transition: background-color 0.2s; }
 
 /* --- Login & Controls --- */
 #login-view { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-select, .button-group button {
-    width: 100%;
-    max-width: 320px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    box-sizing: border-box;
-}
+select, .button-group button { width: 100%; max-width: 320px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
 .button-group button { background-color: #007bff; color: white; border: none; font-weight: bold; }
 .button-group button:hover { background-color: #0056b3; }
 
-/* --- Image & Markers (Shared) --- */
-#image-container {
-    position: relative;
-    margin-top: 20px;
-    max-width: 100%; /* 關鍵：確保容器本身不會超過父元素的寬度 */
-}
-#activity-image {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
-.marker, .submission-marker {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border: 2px solid white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-}
+/* --- Image & Markers --- */
+#image-container { position: relative; margin-top: 20px; max-width: 100%; }
+#activity-image { display: block; width: 100%; height: auto; border-radius: 8px; }
+.marker, .submission-marker { position: absolute; width: 30px; height: 30px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 .marker { background-color: rgba(255, 0, 0, 0.8); }
 .submission-marker { background-color: rgba(0, 123, 255, 0.8); }
 
-/* --- Explanation Box (Aesthetic Upgrade) --- */
-.explanation-box, .submission-explanation {
-    position: absolute;
-    width: 260px;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-    z-index: 20;
-    box-sizing: border-box;
-    font-size: 15px;
-    line-height: 1.5;
-}
+/* --- Explanation Box --- */
+.explanation-box, .submission-explanation { position: absolute; width: 260px; padding: 15px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); z-index: 20; box-sizing: border-box; font-size: 15px; line-height: 1.5; }
 .explanation-box { background-color: white; border-top: 4px solid #007bff; }
 .submission-explanation { background-color: #fff; border-top: 4px solid #fd7e14; }
 .explanation-box textarea { width: 100%; height: 90px; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 15px; box-sizing: border-box; }
@@ -99,20 +51,22 @@ select, .button-group button {
 textarea.error { border: 2px solid #dc3545; }
 .submission-explanation::before { content: "學生的解釋："; font-weight: bold; color: #333; display: block; margin-bottom: 8px; }
 
-/* --- Teacher Layout (Final Fix for iPad) --- */
-.teacher-layout {
-    display: flex;
-    gap: 25px;
+/* --- Teacher Layout (Final Fix for All Devices) --- */
+.teacher-layout::after { /* 清除浮動，確保父容器高度正確 */
+    content: "";
+    display: table;
+    clear: both;
 }
 #group-list-container {
-    width: 33%; /* 明確設定寬度 */
-    min-width: 250px; /* 最小寬度 */
-    flex-shrink: 0; /* 防止此容器被壓縮 */
+    float: left; /* 向左浮動 */
+    width: 33%;
+    min-width: 250px;
+    padding-right: 25px; /* 增加間距 */
     box-sizing: border-box;
 }
 #submission-view-container {
-    width: calc(67% - 25px); /* 使用 calc 精確計算剩餘寬度 */
-    flex-grow: 1; /* 允許它填充剩餘空間 */
+    float: left; /* 向左浮動 */
+    width: 67%;
     box-sizing: border-box;
 }
 #group-list { max-height: 70vh; overflow-y: auto; margin-top: 15px; }
