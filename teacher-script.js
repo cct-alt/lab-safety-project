@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const classSet = new Set();
         snapshot.forEach(doc => {
             const data = doc.data();
-            data.id = doc.id; // *** 重要：將 Firebase 的文檔 ID 存儲起來，以便刪除 ***
+            data.id = doc.id;
             allSubmissions.push(data);
             if (data.className) classSet.add(data.className);
         });
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 classFilter.value = currentSelection;
             }
             renderGroupList();
-        }, 50); // 稍微增加延遲，使其更穩定
+        }, 50);
     });
 
     classFilter.addEventListener('change', renderGroupList);
@@ -60,9 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function displaySubmission(submission) {
         submissionHeader.textContent = `${submission.className}班 - 第${submission.groupNum}組的答案`;
         submissionContent.innerHTML = '';
-        submissionControls.innerHTML = ''; // 清空舊的控制按鈕
+        submissionControls.innerHTML = '';
 
-        // --- 新增：刪除按鈕 ---
         const deleteBtn = document.createElement('button');
         deleteBtn.id = 'delete-submission-btn';
         deleteBtn.textContent = '刪除此提交';
@@ -71,19 +70,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 db.collection('submissions').doc(submission.id).delete()
                     .then(() => {
                         alert('刪除成功！');
-                        // 清空顯示區
                         submissionHeader.textContent = '請選擇一個組別來查看答案';
                         submissionContent.innerHTML = '';
                         submissionControls.innerHTML = '';
                     })
-                    .catch(error => {
-                        console.error("刪除失敗: ", error);
-                        alert('刪除失敗，請檢查網絡或聯絡老師。');
-                    });
+                    .catch(error => alert('刪除失敗，請檢查網絡或聯絡老師。'));
             }
         };
         submissionControls.appendChild(deleteBtn);
-        // -----------------------
 
         const imageContainer = document.createElement('div');
         imageContainer.id = 'image-container';
@@ -103,39 +97,50 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            // --- 電腦版無法隱藏終極修正 ---
-            // **策略：每次點擊都先關閉所有，再判斷是否要打開新的**
-            markerDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                const wasVisible = explanationDiv.classList.contains('visible');
-                
-                // 步驟 1: 無條件關閉所有已打開的解釋框
-                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                    box.classList.remove('visible');
-                });
-                
-                // 步驟 2: 如果剛剛點擊的這個框之前是關閉的，就打開它
-                if (!wasVisible) {
-                    explanationDiv.classList.add('visible');
-                    adjustBoxPosition(explanationDiv, markerDiv, imageContainer);
-                }
-                // 如果是打開的，經過步驟1後就會被關閉，流程結束。
-            });
+            // 關聯標示和解釋框
+            markerDiv.dataset.controls = `explanation-${marker.id}`;
+            explanationDiv.id = `explanation-${marker.id}`;
 
             imageContainer.appendChild(markerDiv);
             imageContainer.appendChild(explanationDiv);
         });
         
-        imageContainer.addEventListener('click', (e) => {
-            if (!e.target.closest('.submission-marker')) {
-                imageContainer.querySelectorAll('.submission-explanation.visible').forEach(box => {
-                    box.classList.remove('visible');
-                });
-            }
-        });
         submissionContent.appendChild(imageContainer);
     }
+    
+    // --- 全局點擊監聽器：終極解決方案 ---
+    document.addEventListener('click', function (e) {
+        const target = e.target;
+        
+        // 情況1：如果點擊的是一個數字標示
+        if (target.matches('.submission-marker')) {
+            const explanationId = target.dataset.controls;
+            const explanationDiv = document.getElementById(explanationId);
+            
+            if (!explanationDiv) return;
+
+            const wasVisible = explanationDiv.classList.contains('visible');
+            
+            // 無條件關閉所有已打開的
+            document.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                box.classList.remove('visible');
+            });
+
+            // 如果之前是關閉的，就打開它
+            if (!wasVisible) {
+                explanationDiv.classList.add('visible');
+                adjustBoxPosition(explanationDiv, target, target.closest('#image-container'));
+            }
+            return;
+        }
+
+        // 情況2：如果點擊的不是標示，也不是解釋框內部，就關閉所有
+        if (!target.closest('.submission-marker') && !target.closest('.submission-explanation')) {
+            document.querySelectorAll('.submission-explanation.visible').forEach(box => {
+                box.classList.remove('visible');
+            });
+        }
+    });
 
     function adjustBoxPosition(box, marker, container) {
         box.style.visibility = 'hidden';
@@ -146,9 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let top = mRect.bottom - cRect.top + 10;
         let left = mRect.left - cRect.left + (mRect.width / 2) - (bRect.width / 2);
         if (top + bRect.height > cRect.height && mRect.top - cRect.top > bRect.height) { top = mRect.top - cRect.top - bRect.height - 10; }
-        if (left < 0) { left = 5; }
+        if (left < 0) left = 5;
         if (left + bRect.width > cRect.width) { left = cRect.width - bRect.width - 5; }
-        if (top < 0) { top = 5; }
+        if (top < 0) top = 5;
         if (top + bRect.height > cRect.height) { top = cRect.height - bRect.height - 5; }
         box.style.top = `${top}px`;
         box.style.left = `${left}px`;
