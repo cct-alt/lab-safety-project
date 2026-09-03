@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
         img.id = 'activity-image';
         imageContainer.appendChild(img);
 
-        const allExplanationDivs = []; // 存儲這個組別所有的解釋框
+        const allExplanationDivs = []; 
 
         submission.markers.forEach((marker, index) => {
             const markerDiv = document.createElement('div');
@@ -98,22 +98,19 @@ document.addEventListener('DOMContentLoaded', function() {
             explanationDiv.className = 'submission-explanation';
             explanationDiv.textContent = marker.explanation;
             
-            allExplanationDivs.push(explanationDiv); // 加入到列表中
+            allExplanationDivs.push(explanationDiv);
 
-            // --- 終極修正：最簡單、最直接的獨立事件監聽 ---
             markerDiv.addEventListener('click', function(e) {
-                e.stopPropagation(); // 阻止事件冒泡，極其重要！
+                e.stopPropagation();
 
                 const isCurrentlyVisible = explanationDiv.classList.contains('visible');
 
-                // 步驟 1: 無條件關閉所有其他的解釋框
                 allExplanationDivs.forEach(div => {
                     if (div !== explanationDiv) {
                         div.classList.remove('visible');
                     }
                 });
 
-                // 步驟 2: 只對當前點擊的這一個，執行開/關切換
                 if (isCurrentlyVisible) {
                     explanationDiv.classList.remove('visible');
                 } else {

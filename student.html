@@ -3,32 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>實驗室安全挑戰 - 老師端</title>
+    <title>實驗室安全挑戰 - 學生端</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>老師儀表板</h1>
-        <div class="teacher-layout">
-            <div id="group-list-container">
-                <h2>已提交組別</h2>
-                <div class="filter-container">
-                    <label for="class-filter">篩選班級:</label>
-                    <select id="class-filter">
-                        <option value="all">所有班級</option>
-                    </select>
-                </div>
-                <div id="group-list">
-                    <p>正在等待學生提交...</p>
-                </div>
+        <!-- 登入頁 -->
+        <div id="login-view">
+            <h1>實驗室安全挑戰</h1>
+            <select id="class-select"></select>
+            <select id="group-select"></select>
+            <button id="start-btn">開始挑戰</button>
+        </div>
+
+        <!-- 活動頁 -->
+        <div id="activity-view" style="display:none;">
+            <h2 id="info-header"></h2>
+            <p>請點擊圖片中您認為危險的地方，並寫下解釋。</p>
+            <div id="image-container">
+                <img id="activity-image" src="" alt="實驗室圖片">
             </div>
-            <div id="submission-view-container">
-                <h2 id="submission-header">請選擇一個組別來查看答案</h2>
-                <!-- *** 新增：放置刪除按鈕的容器 *** -->
-                <div id="submission-controls"></div>
-                <div id="submission-content">
-                    <!-- 學生答案會顯示在這裡 -->
-                </div>
+            <div class="button-group">
+                <button id="submit-btn">提交答案</button>
+                <button id="edit-btn" style="display:none;">修改答案</button>
             </div>
         </div>
     </div>
@@ -36,8 +33,11 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
     <!-- 專案程式 -->
     <script src="firebase-config.js"></script>
-    <script src="teacher-script.js"></script>
+    
+    <!-- **極其重要：確保這裡是 student-script.js** -->
+    <script src="student-script.js"></script>
 </body>
 </html>
