@@ -1,15 +1,14 @@
 /* 基本樣式 */
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
-.container { width: 100%; max-width: 1000px; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+.container { width: 100%; max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); box-sizing: border-box; }
 h1, h2 { color: #0056b3; text-align: center; }
 #login-view { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-select, button { width: 100%; max-width: 300px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; cursor: pointer; }
-button { background-color: #007bff; color: white; border: none; font-weight: bold; transition: background-color 0.3s; }
-button:hover { background-color: #0056b3; }
-#image-container { position: relative; max-width: 100%; margin: 20px auto; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; }
+select, button { width: 100%; max-width: 300px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; cursor: pointer; box-sizing: border-box; }
+button { background-color: #007bff; color: white; border: none; font-weight: bold; }
+#image-container { position: relative; margin: 20px auto; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; }
 #activity-image { display: block; width: 100%; height: auto; }
-.marker { position: absolute; width: 30px; height: 30px; background-color: rgba(255, 0, 0, 0.7); border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); z-index: 5; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
-.explanation-box { position: absolute; width: 250px; background-color: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; }
+.marker { position: absolute; width: 30px; height: 30px; background-color: rgba(255, 0, 0, 0.7); border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 5; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
+.explanation-box { position: absolute; width: 250px; background-color: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; box-sizing: border-box; }
 .explanation-box.hidden { display: none; }
 .explanation-box textarea { width: 100%; height: 80px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; padding: 5px; box-sizing: border-box; margin-bottom: 5px; }
 .explanation-controls { display: flex; justify-content: flex-end; gap: 8px; }
@@ -19,14 +18,32 @@ button:hover { background-color: #0056b3; }
 .marker.error { background-color: #dc3545; border-color: #ffc107; }
 .explanation-box textarea.error { border-color: #dc3545; box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); }
 .teacher-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-#group-list-container { width: 100%; min-width: 280px; flex: 1; border-right: 1px solid #eee; padding-right: 20px; }
+#group-list-container { width: 100%; min-width: 280px; flex: 1; padding-right: 20px; box-sizing: border-box; }
 #submission-view-container { width: 100%; flex: 2; min-width: 400px; }
 #group-list { max-height: 60vh; overflow-y: auto; margin-top: 10px; }
 .group-button { display: block; width: 100%; text-align: left; background-color: #f8f9fa; color: #333; margin-bottom: 5px; border: 1px solid #ddd; }
 .group-button.active { background-color: #007bff; color: white; border-color: #007bff; }
-.submission-marker { position: absolute; width: 30px; height: 30px; background-color: rgba(0, 123, 255, 0.7); border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; z-index: 5; }
-.submission-explanation { position: absolute; width: 250px; background-color: #fff3cd; padding: 10px; border: 1px solid #ffeeba; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; display: none; max-height: 200px; overflow-y: auto; word-wrap: break-word; }
-.submission-explanation.visible { display: block; }
+.submission-marker { background-color: rgba(0, 123, 255, 0.7); }
+
+/* *** 最終修正：只用 display 來控制，移除所有可能衝突的屬性 *** */
+.submission-explanation {
+    position: absolute;
+    width: 250px;
+    background-color: #fff3cd;
+    padding: 10px;
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 10;
+    display: none; /* 預設永遠是隱藏 */
+    max-height: 200px;
+    overflow-y: auto;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
+.submission-explanation.visible {
+    display: block; /* 只有這個 class 能讓它顯示 */
+}
 .filter-container { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .filter-container label { font-weight: bold; }
 .filter-container select { max-width: 200px; width: auto; padding: 8px; }
